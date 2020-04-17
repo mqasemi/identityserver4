@@ -11,11 +11,19 @@ using Microsoft.AspNetCore.Authentication;
 
 namespace mvcangularClient.Controllers
 {
-    
+
     public class IdentityController : Controller
     {
 
+        private async Task<HttpResponseMessage> CallApiUsingUserAccessToken()
+        {
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
 
+            var client = new HttpClient();
+            client.SetBearerToken(accessToken);
+
+            return await client.GetAsync("http://localhost:5001/identity");
+        }
         private async Task<HttpResponseMessage> GetUserClaimsFromApiWithClientCredentials()
         {
             var client = new HttpClient();
@@ -53,21 +61,26 @@ namespace mvcangularClient.Controllers
         }
 
         [Authorize]
-        public  IActionResult Index()
+        public async Task<ViewResult> Index()
         {
             var userClaimsVM = new UserClaimsVM();
-            // var userClaimsWithClientCredentials = await GetUserClaimsFromApiWithClientCredentials();
-            // userClaimsVM.UserClaimsWithClientCredentials = userClaimsWithClientCredentials.IsSuccessStatusCode ? await userClaimsWithClientCredentials.Content.ReadAsStringAsync() : userClaimsWithClientCredentials.StatusCode.ToString();
+             var userClaimsWithClientCredentials = await GetUserClaimsFromApiWithClientCredentials();
+            userClaimsVM.UserClaimsWithClientCredentials =
+            userClaimsWithClientCredentials.IsSuccessStatusCode ? await
+            userClaimsWithClientCredentials.Content.ReadAsStringAsync() :
+            userClaimsWithClientCredentials.StatusCode.ToString();
+
+            var userClaimsWithAccessToken = await CallApiUsingUserAccessToken();
+            userClaimsVM.UserClaimsWithAccessToken = userClaimsWithAccessToken.IsSuccessStatusCode ? await userClaimsWithAccessToken.Content.ReadAsStringAsync() : userClaimsWithAccessToken.StatusCode.ToString();
 
             return View(userClaimsVM);
-
         }
         public async Task Logout()
         {
             await HttpContext.SignOutAsync("Cookies");
             await HttpContext.SignOutAsync("oidc");
         }
-       
+
 
     }
 

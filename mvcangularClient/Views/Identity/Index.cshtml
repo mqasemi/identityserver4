@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Index";
 }
+
  
 <h2>Index</h2>
  
@@ -11,6 +12,12 @@
     </dt>
     <dd>
         @Model.UserClaimsWithClientCredentials
+    </dd>
+    <dt>
+        UserClaimsWithAccessToken
+    </dt>
+    <dd>
+        @Model.UserClaimsWithAccessToken
     </dd>
 </dl>
  
