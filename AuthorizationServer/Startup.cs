@@ -2,12 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AuthorizationServer.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+
+
 
 namespace AuthorizationServer
 {
@@ -20,18 +25,67 @@ namespace AuthorizationServer
 
         public IConfiguration Configuration { get; }
 
+public void ConfigureDevelopmentServices(IServiceCollection services)
+        {
+            services.AddDbContext<DBDataContext>(x => 
+            {
+                x.UseLazyLoadingProxies();
+                x.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
+            });
+                
+            ConfigureServices(services);
+        }
+
+        public void ConfigureProductionServices(IServiceCollection services)
+        {
+            services.AddDbContext<DBDataContext>(x => 
+            {
+                x.UseLazyLoadingProxies();
+                x.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
+            });
+
+            ConfigureServices(services);
+        }
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc(MvcOptions=>{
+
+            IdentityBuilder builder = services.AddIdentityCore<IdentityUser>(option =>
+            {
+                option.Password.RequireDigit = false;
+                option.Password.RequiredLength = 4;
+                option.Password.RequireUppercase = false;
+                option.Password.RequireNonAlphanumeric = false;
+
+            });
+            builder=new IdentityBuilder(builder.UserType,typeof(IdentityRole),builder.Services);
+            builder.AddEntityFrameworkStores<DBDataContext>();
+            builder.AddRoleManager<RoleManager<IdentityRole>>();
+            builder.AddRoleValidator<RoleValidator<IdentityRole>>();
+            builder.AddSignInManager<SignInManager<IdentityUser>>();
+            builder.AddDefaultTokenProviders();
+            
+
+            services.AddMvc(MvcOptions =>
+            {
                 MvcOptions.EnableEndpointRouting = false;
             });
-            services.AddIdentityServer().AddDeveloperSigningCredential()
-            .AddInMemoryApiResources(config.getApiResource())
-            .AddInMemoryIdentityResources(config.GetIdentityResources())
-            .AddInMemoryClients(config.GetClients())
-            .AddTestUsers(TestUsers.Users);
+             var builderIs4 = services.AddIdentityServer(options =>
+                {
+                    options.Events.RaiseErrorEvents = true;
+                    options.Events.RaiseInformationEvents = true;
+                    options.Events.RaiseFailureEvents = true;
+                    options.Events.RaiseSuccessEvents = true;
             
+                })
+                .AddInMemoryIdentityResources(config.GetIdentityResources())
+                .AddInMemoryApiResources(config.getApiResource())
+                .AddInMemoryClients(config.GetClients())
+                .AddAspNetIdentity<IdentityUser>();
+
+            // not recommended for production - you need to store your key material somewhere secure
+            builderIs4.AddDeveloperSigningCredential();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -51,11 +105,11 @@ namespace AuthorizationServer
             app.UseIdentityServer();
             app.UseStaticFiles();
             app.UseMvcWithDefaultRoute();
-           
 
-           
 
-           
+
+
+
         }
     }
 }
