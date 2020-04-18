@@ -26,25 +26,56 @@ namespace AuthorizationServer
         public IConfiguration Configuration { get; }
 
         public void ConfigureDevelopmentServices(IServiceCollection services)
-        {
+        {string devConnectionString=Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<DBDataContext>(x =>
             {
                 x.UseLazyLoadingProxies();
-                x.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
+                x.UseSqlite(devConnectionString);
             });
+             var builder=cofigurIdenttyServer(services);
+        builder.AddConfigurationStore(options=>{
+            options.ConfigureDbContext=x=> x.UseSqlite(devConnectionString);
+        }).AddOperationalStore(options=>{
+            options.ConfigureDbContext=x=> x.UseSqlite(devConnectionString);
+        });
 
             ConfigureServices(services);
         }
 
         public void ConfigureProductionServices(IServiceCollection services)
-        {
+        { string prodConnectionString=Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<DBDataContext>(x =>
             {
+               
                 x.UseLazyLoadingProxies();
-                x.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
+                x.UseSqlite(prodConnectionString);
             });
+        
+        var builder=cofigurIdenttyServer(services);
+        builder.AddConfigurationStore(options=>{
+            options.ConfigureDbContext=x=> x.UseSqlite(prodConnectionString);
+        }).AddOperationalStore(options=>{
+            options.ConfigureDbContext=x=> x.UseSqlite(prodConnectionString);
+        });
 
             ConfigureServices(services);
+        }
+        public IIdentityServerBuilder cofigurIdenttyServer(IServiceCollection services){
+             var builderIs4 = services.AddIdentityServer(options =>
+               {
+                   options.Events.RaiseErrorEvents = true;
+                   options.Events.RaiseInformationEvents = true;
+                   options.Events.RaiseFailureEvents = true;
+                   options.Events.RaiseSuccessEvents = true;
+
+               })
+            //    .AddInMemoryIdentityResources(config.GetIdentityResources())
+            //    .AddInMemoryApiResources(config.getApiResource())
+            //    .AddInMemoryClients(config.GetClients())
+               .AddAspNetIdentity<IdentityUser>();
+            // not recommended for production - you need to store your key material somewhere secure
+            builderIs4.AddDeveloperSigningCredential();
+            return builderIs4;
         }
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -72,21 +103,7 @@ namespace AuthorizationServer
             // {
             //     MvcOptions.EnableEndpointRouting = false;
             // });
-            var builderIs4 = services.AddIdentityServer(options =>
-               {
-                   options.Events.RaiseErrorEvents = true;
-                   options.Events.RaiseInformationEvents = true;
-                   options.Events.RaiseFailureEvents = true;
-                   options.Events.RaiseSuccessEvents = true;
-
-               })
-               .AddInMemoryIdentityResources(config.GetIdentityResources())
-               .AddInMemoryApiResources(config.getApiResource())
-               .AddInMemoryClients(config.GetClients())
-               .AddAspNetIdentity<IdentityUser>();
-
-            // not recommended for production - you need to store your key material somewhere secure
-            builderIs4.AddDeveloperSigningCredential();
+           
 
         }
 
