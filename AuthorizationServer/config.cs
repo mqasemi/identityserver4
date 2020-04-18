@@ -25,7 +25,7 @@ namespace AuthorizationServer
                 ClientSecrets={new Secret("secret".Sha256())},
                 AllowedGrantTypes=GrantTypes.Code,
                 RedirectUris = { "http://localhost:5002/signin-oidc" },
-    PostLogoutRedirectUris = { "http://localhost:5002/signout-callback-oidc" },
+                PostLogoutRedirectUris = { "http://localhost:5002/signout-callback-oidc" },
                 AllowedScopes =
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
@@ -39,7 +39,7 @@ namespace AuthorizationServer
                 ClientSecrets={new Secret("secret".Sha256())},
                 AllowedGrantTypes=GrantTypes.Code,
                 RedirectUris = { "http://localhost:5002/signin-oidc" },
-    PostLogoutRedirectUris = { "http://localhost:5002/signout-callback-oidc" },
+                PostLogoutRedirectUris = { "http://localhost:5002/signout-callback-oidc" },
                 AllowedScopes =
                     {
                         IdentityServerConstants.StandardScopes.OpenId,

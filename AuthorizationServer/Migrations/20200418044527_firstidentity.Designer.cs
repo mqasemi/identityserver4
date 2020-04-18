@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AuthorizationServer.Migrations
 {
     [DbContext(typeof(DBDataContext))]
-    [Migration("20200417193908_identityfrist")]
-    partial class identityfrist
+    [Migration("20200418044527_firstidentity")]
+    partial class firstidentity
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

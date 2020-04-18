@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace AuthorizationServer.Migrations
 {
-    public partial class identityfrist : Migration
+    public partial class firstidentity : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
