@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AuthorizationServer.Models;
+using IdentityServer4.EntityFramework.DbContexts;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -24,10 +25,14 @@ namespace AuthorizationServer
                    try
                 {
                     var context = services.GetRequiredService<DBDataContext>();
+                    var persistedGrantContext=services.GetRequiredService<PersistedGrantDbContext>();
+                    var configurationContext= services.GetRequiredService<ConfigurationDbContext>();
                     var userManager=services.GetRequiredService<UserManager<IdentityUser>>();
                     var roleMnager =services.GetRequiredService<RoleManager<IdentityRole>>();
                     context.Database.Migrate();
-                    Seed.SeedUsers(userManager,roleMnager);
+                    configurationContext.Database.Migrate();
+                    persistedGrantContext.Database.Migrate();
+                    Seed.SeedUsers(userManager,roleMnager,persistedGrantContext,configurationContext);
                 }
                 catch (Exception ex)
                 {

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using AuthorizationServer.Models;
 using Microsoft.AspNetCore.Builder;
@@ -26,64 +27,66 @@ namespace AuthorizationServer
         public IConfiguration Configuration { get; }
 
         public void ConfigureDevelopmentServices(IServiceCollection services)
-        {string devConnectionString=Configuration.GetConnectionString("DefaultConnection");
+        {
+            var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
+            string devConnectionString = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<DBDataContext>(x =>
             {
                 x.UseLazyLoadingProxies();
                 x.UseSqlite(devConnectionString);
             });
-             var builder=cofigurIdenttyServer(services);
-        builder.AddConfigurationStore(options=>{
-            options.ConfigureDbContext=x=> x.UseSqlite(devConnectionString);
-        }).AddOperationalStore(options=>{
-            options.ConfigureDbContext=x=> x.UseSqlite(devConnectionString);
-        });
+          
+
+             var builderIs4 = cofigurIdenttyServer(services);
+            
+            builderIs4.AddDeveloperSigningCredential();
+            
+            builderIs4.AddConfigurationStore(options =>
+            {
+                options.ConfigureDbContext = builder =>
+                               builder.UseSqlite(devConnectionString,
+                                   sql => sql.MigrationsAssembly(migrationsAssembly));
+            }
+            ).AddOperationalStore(options =>
+            {
+                options.ConfigureDbContext = builder =>
+                           builder.UseSqlite(devConnectionString,
+                               sql => sql.MigrationsAssembly(migrationsAssembly));
+            });
 
             ConfigureServices(services);
         }
 
         public void ConfigureProductionServices(IServiceCollection services)
-        { string prodConnectionString=Configuration.GetConnectionString("DefaultConnection");
+        {
+             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
+            string prodConnectionString = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<DBDataContext>(x =>
             {
-               
+
                 x.UseLazyLoadingProxies();
                 x.UseSqlite(prodConnectionString);
             });
-        
-        var builder=cofigurIdenttyServer(services);
-        builder.AddConfigurationStore(options=>{
-            options.ConfigureDbContext=x=> x.UseSqlite(prodConnectionString);
-        }).AddOperationalStore(options=>{
-            options.ConfigureDbContext=x=> x.UseSqlite(prodConnectionString);
-        });
+
+            var builder = cofigurIdenttyServer(services);
+            builder.AddConfigurationStore(options =>
+            {
+                options.ConfigureDbContext = builder =>
+                               builder.UseSqlite(prodConnectionString,
+                                   sql => sql.MigrationsAssembly(migrationsAssembly));
+            }
+            ).AddOperationalStore(options =>
+            {
+                options.ConfigureDbContext = builder =>
+                           builder.UseSqlite(prodConnectionString,
+                               sql => sql.MigrationsAssembly(migrationsAssembly));
+            });
 
             ConfigureServices(services);
         }
-        public IIdentityServerBuilder cofigurIdenttyServer(IServiceCollection services){
-             var builderIs4 = services.AddIdentityServer(options =>
-               {
-                   options.Events.RaiseErrorEvents = true;
-                   options.Events.RaiseInformationEvents = true;
-                   options.Events.RaiseFailureEvents = true;
-                   options.Events.RaiseSuccessEvents = true;
-
-               })
-            //    .AddInMemoryIdentityResources(config.GetIdentityResources())
-            //    .AddInMemoryApiResources(config.getApiResource())
-            //    .AddInMemoryClients(config.GetClients())
-               .AddAspNetIdentity<IdentityUser>();
-            // not recommended for production - you need to store your key material somewhere secure
-            builderIs4.AddDeveloperSigningCredential();
-            return builderIs4;
-        }
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
+        public IIdentityServerBuilder cofigurIdenttyServer(IServiceCollection services)
         {
-            services.AddControllersWithViews();
-
-
-            IdentityBuilder builder = services.AddIdentity<IdentityUser, IdentityRole>(option =>
+             IdentityBuilder builder = services.AddIdentity<IdentityUser, IdentityRole>(option =>
              {
                  option.Password.RequireDigit = false;
                  option.Password.RequiredLength = 4;
@@ -93,17 +96,70 @@ namespace AuthorizationServer
              });
             builder = new IdentityBuilder(builder.UserType, typeof(IdentityRole), builder.Services);
             builder.AddEntityFrameworkStores<DBDataContext>();
-            // builder.AddRoleManager<RoleManager<IdentityRole>>();
+            var builderIs4 = services.AddIdentityServer(options =>
+              {
+                  options.Events.RaiseErrorEvents = true;
+                  options.Events.RaiseInformationEvents = true;
+                  options.Events.RaiseFailureEvents = true;
+                  options.Events.RaiseSuccessEvents = true;
+
+              })
+              .AddAspNetIdentity<IdentityUser>();
+            
+            builderIs4.AddDeveloperSigningCredential();
+            builder.AddDefaultTokenProviders();
+            return builderIs4;
+        }
+        // This method gets called by the runtime. Use this method to add services to the container.
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddControllersWithViews();
+          //  var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
+
+           
+            
+            //builder.AddRoleManager<RoleManager<IdentityRole>>();
             // builder.AddRoleValidator<RoleValidator<IdentityRole>>();
             // builder.AddSignInManager<SignInManager<IdentityUser>>();
-            builder.AddDefaultTokenProviders();
+
+        /*     var builderIs4 = services.AddIdentityServer(options =>
+              {
+                  options.Events.RaiseErrorEvents = true;
+                  options.Events.RaiseInformationEvents = true;
+                  options.Events.RaiseFailureEvents = true;
+                  options.Events.RaiseSuccessEvents = true;
+
+              })
+              //    .AddInMemoryIdentityResources(config.GetIdentityResources())
+              //    .AddInMemoryApiResources(config.getApiResource())
+              //    .AddInMemoryClients(config.GetClients())
+              .AddAspNetIdentity<IdentityUser>()
+              .AddConfigurationStore(options =>
+            {
+                options.ConfigureDbContext = builder1 =>
+                               builder1.UseSqlite(Configuration.GetConnectionString("DefaultConnection"),
+                                   sql => sql.MigrationsAssembly(migrationsAssembly));
+            }
+            ).AddOperationalStore(options =>
+            {
+                options.ConfigureDbContext = builder1 =>
+                           builder1.UseSqlite(Configuration.GetConnectionString("DefaultConnection"),
+                               sql => sql.MigrationsAssembly(migrationsAssembly));
+            });
+
+            // not recommended for production - you need to store your key material somewhere secure
+            builderIs4.AddDeveloperSigningCredential();
+ */
+
+
+         
 
 
             // services.AddMvc(MvcOptions =>
             // {
             //     MvcOptions.EnableEndpointRouting = false;
             // });
-           
+
 
         }
 
@@ -124,7 +180,7 @@ namespace AuthorizationServer
 
             app.UseRouting();
             app.UseIdentityServer();
-             app.UseAuthorization();
+            app.UseAuthorization();
             // app.UseStaticFiles();
             // app.UseMvcWithDefaultRoute();
             app.UseEndpoints(endpoints =>
