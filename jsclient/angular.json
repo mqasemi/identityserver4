@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "oidcClient": {
+    "jsclient": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/oidcClient",
+            "outputPath": "dist/jsclient",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -21,7 +21,13 @@
             "aot": true,
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              "src/silent-refresh.html",
+              {
+                "glob": "**/*",
+                "input": "./node_modules/oidc-client/",
+                "output": "./assets/"
+              }
             ],
             "styles": [
               "src/styles.css"
@@ -62,18 +68,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "oidcClient:build"
+            "browserTarget": "jsclient:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "oidcClient:build:production"
+              "browserTarget": "jsclient:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "oidcClient:build"
+            "browserTarget": "jsclient:build"
           }
         },
         "test": {
@@ -110,18 +116,18 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "oidcClient:serve"
+            "devServerTarget": "jsclient:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "oidcClient:serve:production"
+              "devServerTarget": "jsclient:serve:production"
             }
           }
         }
       }
     }
   },
-  "defaultProject": "oidcClient",
+  "defaultProject": "jsclient",
   "cli": {
     "analytics": false
   }

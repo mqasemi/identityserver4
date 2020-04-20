@@ -114,6 +114,15 @@ namespace AuthorizationServer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
+            services.AddCors(options=>{
+                options.AddDefaultPolicy(
+                    builder=>{
+                        builder.AllowAnyHeader();
+                        builder.AllowAnyMethod();
+                        builder.WithOrigins("http://localhost:4200");
+                    }
+                );
+            });
           //  var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
            
@@ -179,6 +188,7 @@ namespace AuthorizationServer
             app.UseStaticFiles();
 
             app.UseRouting();
+            app.UseCors();
             app.UseIdentityServer();
             app.UseAuthorization();
             // app.UseStaticFiles();

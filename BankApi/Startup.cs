@@ -34,6 +34,14 @@ namespace BankApi
                 opt.ApiName="BankApiDotnet";
                 opt.RequireHttpsMetadata=false;
             });
+
+            services.AddCors(options=>{
+                options.AddDefaultPolicy(policy=>{
+                    policy.AllowAnyHeader();
+                    policy.AllowAnyMethod();
+                    policy.WithOrigins("http://localhost:4200");
+                });
+            });
             services.AddControllers(opt=>{
                 var policy=new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
                 opt.Filters.Add(new AuthorizeFilter(policy));
@@ -53,6 +61,7 @@ namespace BankApi
          //   app.UseHttpsRedirection();
 
             app.UseRouting();
+            app.UseCors();
             app.UseAuthentication();
             app.UseAuthorization();
 

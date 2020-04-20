@@ -13,6 +13,17 @@ namespace AuthorizationServer
         }
         public static IEnumerable<Client> GetClients(){
             return new List<Client> {
+                new Client {
+    ClientId = "angular_spa",
+    ClientName = "Angular 4 Client",
+    AllowedGrantTypes = GrantTypes.Implicit,
+    AllowedScopes = new List<string> { "openid", "profile", "BankApiDotnet" },
+    RedirectUris = new List<string> { "http://localhost:4200/auth-callback" },
+    PostLogoutRedirectUris = new List<string> { "http://localhost:4200/" },
+    AllowedCorsOrigins = new List<string> { "http://localhost:4200" },
+    AllowAccessTokensViaBrowser = true,
+    SlidingRefreshTokenLifetime=10
+},
                 new Client{ ClientId="bank",
                 ClientSecrets={new Secret("secret".Sha256())},
                 AllowedGrantTypes=GrantTypes.ClientCredentials,
